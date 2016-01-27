@@ -1,0 +1,44 @@
+[hadoop_all:children]
+hadoop_masters
+hadoop_slaves
+hadoop_clients
+
+[hadoop_master_primary]
+hadoopmaster ansible_ssh_host=192.168.50.11
+
+[hadoop_master_secondary]
+
+[hadoop_masters:children]
+hadoop_master_primary
+hadoop_master_secondary
+
+[hadoop_slaves]
+hadoopslave1 ansible_ssh_host=192.168.50.12
+hadoopslave2 ansible_ssh_host=192.168.50.13
+hadoopslave3 ansible_ssh_host=192.168.50.14
+hadoopclient1
+
+[spark_common]
+hadoopmaster
+hadoopslave1
+hadoopslave2
+hadoopslave3
+
+[spark_master]
+hadoopmaster
+
+[spark_workers:children]
+hadoop_slaves
+
+[hadoop_clients]
+hadoopclient1 ansible_ssh_host=192.168.50.15
+
+[sqoop_server]
+hadoopslave1
+
+[hue_server]
+hadoopclient1
+
+[hadoop_all:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key

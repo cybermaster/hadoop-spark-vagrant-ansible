@@ -1,0 +1,68 @@
+---
+# The playbook for hadoop_common tasks
+  
+- name: Add the Cloudera hadoop Repository
+  apt_repository: repo="deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh/ trusty-cdh5 contrib" state=present
+
+- name: Add the Cloudera hadoop src Repository
+  apt_repository: repo="deb-src http://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh/ trusty-cdh5 contrib" state=present
+  
+- name: add the Cloudera APT repository key
+  apt_key: url=https://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh/archive.key state=present
+
+- name: add the Cloudera Manager Repository
+  apt_repository: repo="deb [arch=amd64] http://archive.cloudera.com/cm5/ubuntu/trusty/amd64/cm trusty-cm5 contrib" state=present
+
+- name: add the Cloudera Magnger src Repository  
+  apt_repository: repo="deb-src http://archive.cloudera.com/cm5/ubuntu/trusty/amd64/cm trusty-cm5 contrib" state=present
+
+- name: Add python2.7 repository for ubuntu
+  apt_repository: repo='ppa:fkrull/deadsnakes-python2.7'
+
+- name: Add Oracle Java Repository
+  apt_repository: repo='ppa:webupd8team/java'
+
+- name: Install add-apt-repository
+  apt: name=software-properties-common state=latest
+
+- name: update apt cache (equivalent of apt-get update)
+  apt: update_cache=yes cache_valid_time=172800
+
+- name: upgrade the distro (aptitude safe-upgrade)
+  apt: upgrade=yes
+
+- name: Install latest version of required packages (python, vim, etc...)
+  apt: name={{item}} state=latest
+  with_items: 
+   - vim
+   - tree
+   - python-pip
+   - ipython
+   - sysv-rc-conf
+   - silversearcher-ag
+
+- name: Accept Java 8 Licence
+  shell: echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | tee /etc/oracle-java-8-licence-acceptance | /usr/bin/debconf-set-selections
+  args:
+    creates: /etc/oracle-java-8-licence-acceptance
+
+- name: Install Oracle Java 8
+  apt: name={{item}} state=latest
+  with_items:
+    - oracle-java8-installer
+    - ca-certificates
+    - oracle-java8-set-default
+    
+# modify /etc/hosts file no line like 127.0.1.1
+- lineinfile: dest=/etc/hosts regexp='^127\.0\.1\.1' state=absent
+
+- name: Copy user generated ssh public-key for vagrant to all hosts
+  lineinfile: dest=/home/vagrant/.ssh/authorized_keys line="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKeAaMvFXGs2p4V6HclrBFTAzrvmfhXaEIHh4kN4+WlHTfZ+EmXxSgSX3uFGkCyMiPCI3yVjEoz0yfZEPwWWoNvI0at/a9ypKe631CZHsoHgqzh45sa6wcVG37kxqPTerJVCQ2iaOaUKLdie4InfIpAU8CrkLJn9nndgIy8xHqhXK0b4OHAc+q9iXpvtgpCx8Y8X09RtILce/nacc4bBa9dYch32o21aZkNX8H3moXBjV6g+OEuOZRXaFv05WiGAWWKZJLGWZsnjRq4ceOeNUg/d15K4UkE4w1tFRL0pAZkYw/BQf14eqcs/I4DlvUCVpUtWc9PIH6Y361wfQU9R8j usergen vagrant key" state=present
+
+- name: Copy user generated ssh private-key for vagrant user to all hosts
+  copy: src=id_rsa dest=/home/vagrant/.ssh/id_rsa owner=vagrant group=vagrant mode=0600
+
+- name: Copy the configuration files for using Cloudera repo for ZooKeeper package
+  template: src=roles/hadoop_common/files/{{item}} dest=/etc/apt/preferences.d/{{item}} mode=644
+  with_items: 
+   - cloudera.pref

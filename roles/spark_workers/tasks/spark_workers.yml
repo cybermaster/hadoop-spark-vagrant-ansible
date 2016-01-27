@@ -1,0 +1,9 @@
+---
+# Install and configure the spark as a Spark standalone cluster (w/o yarn).
+
+# - name: start the spark_slaves
+#   command: /home/vagrant/spark-1.5.2-bin-hadoop2.6/sbin/start-slave.sh spark://hadoopmaster:{{spark['spark_masterport']}}
+#   sudo: yes
+#   sudo_user: vagrant
+#   ignore_errors: yes
+#   tags: start_spark_slaves

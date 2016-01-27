@@ -1,0 +1,36 @@
+---
+# Launch Job to count occurrence of a word.
+- hosts: hadoop_slaves
+  sudo: yes
+  tasks:
+   - name: copy the file to server
+     copy: src=inputfile dest=/tmp/inputfile
+     run_once: true
+ 
+   - name: upload the file to HDFS
+     shell: sudo su - hdfs -c "hdfs dfs -put -f /tmp/inputfile /inputfile"
+     run_once: true
+     
+   - name: remove previous MapReduce result on HDFS
+     shell: sudo su - hdfs -c "hdfs dfs -rm -r /outputfile"
+     ignore_errors: yes
+
+   - name: Run the MapReduce job to count the occurance of word hello
+     shell: sudo su - hdfs -c "hadoop jar /usr/lib/hadoop-0.20-mapreduce/hadoop-examples.jar grep /inputfile /outputfile 'hello'"
+     run_once: true
+     
+   - name: Fetch the outputfile to local server tmp dir
+     shell: sudo su - hdfs -c "hadoop fs -get /outputfile /tmp/outputfile"
+     run_once: true
+     
+   - name: Get the outputfile to hadoopslave1:/tmp/outputfile/part-00000
+     fetch: dest=/tmp src=/tmp/outputfile/part-00000
+     run_once: true
+     
+   - name: Print the result
+     shell: sudo su - hdfs -c "cat /tmp/outputfile/part-r-00000"
+     register: word_result
+     run_once: true
+     
+   - debug: msg="{{word_result.stdout}}"
+     run_once: true

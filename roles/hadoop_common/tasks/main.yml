@@ -1,0 +1,4 @@
+---
+# The playbook for hadoop_common tasks
+
+- include: hadoop_common.yml

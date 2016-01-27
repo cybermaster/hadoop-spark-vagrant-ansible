@@ -1,0 +1,6 @@
+---
+# Configurations for Vagrant environment
+internal_subnets:
+  - 192.168.0.0/16
+  - 172.16.0.0/16
+  - 10.0.2.2

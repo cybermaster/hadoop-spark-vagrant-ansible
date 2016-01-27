@@ -1,0 +1,51 @@
+---
+# The main playbook to deploy the site
+
+- hosts: hadoop_all
+  sudo: yes
+  roles:
+   - hadoop_common
+
+- hosts: hadoop_master_primary
+  roles:
+  - hadoop_primary
+
+- hosts: hadoop_slaves
+  roles:
+  - hadoop_slaves
+
+- hosts: spark_common
+  roles:
+  - spark_common
+
+- hosts: spark_master
+  roles:
+  - spark_master
+
+- hosts: spark_workers
+  roles:
+  - spark_workers
+
+- hosts: hadoop_clients
+  roles:
+  - { role: hadoop_clients }
+
+- hosts: hadoop_master_secondary
+  roles:
+  - { role: hadoop_secondary, when: ha_enabled }
+
+# - hosts: hue_server
+#   roles:
+#   - { role: hue_server}
+#
+# - hosts: sqoop_server
+#   roles:
+#   - { role: sqoop_server}
+
+# - hosts: zookeeper_servers
+#   roles:
+#   - { role: zookeeper_servers, when: ha_enabled }
+#
+# - hosts: qjournal_servers
+#   roles:
+#   - { role: qjournal_servers, when: ha_enabled }

@@ -1,0 +1,38 @@
+---
+# Launch Job to count occurrence of a word.
+  
+- hosts: hadoopslave1
+  #user: name={{ user_account_for_testing }}
+  sudo: yes
+  tasks:
+   - name: copy the file to server
+     copy: src=wcmapper.py dest=/tmp/wcmapper.py
+
+   - name: copy the file to server
+     copy: src=wcreducer.py dest=/tmp/wcreducer.py
+
+   - name: copy the file to server
+     copy: src=sample.txt.gz dest=/tmp/sample.txt.gz
+ 
+   - name: upload the file to HDFS
+     command: hdfs dfs -put -f /tmp/sample.txt.gz /sample.txt.gz
+     sudo: yes
+     sudo_user: hdfs
+
+   - name: remove previous MapReduce result on HDFS
+     shell: sudo su - hdfs -c "hdfs dfs -rm -r /gutenberg-output"
+     ignore_errors: yes
+ 
+   - name: Run the MapReduce job to count the occurance of word hello
+     command: hadoop jar /usr/lib/hadoop-0.20-mapreduce/contrib/streaming/hadoop-streaming-mr1.jar -mapper "python /tmp/wcmapper.py" -reducer "python /tmp/wcreducer.py" -input /sample.txt.gz -output /gutenberg-output
+     sudo: yes
+     sudo_user: hdfs
+
+   - name: Print the result
+     shell: sudo su - hdfs -c "hdfs dfs -cat /gutenberg-output/part-00000"
+     register: word_result
+     run_once: true
+   
+   - name: Print word count result by hadoop streaming
+     debug: "msg={{ word_result.stdout }}"
+     run_once: true

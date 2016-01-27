@@ -1,0 +1,17 @@
+---
+# Install and configure the spark as a Spark standalone cluster (w/o yarn).
+
+- name: copy the slave config file to spark_master
+  copy: src=slaves dest=/opt/{{ item }}/conf/slaves
+  with_items: spark.spark_version
+  sudo: yes
+  sudo_user: vagrant
+  run_once: true
+  ignore_errors: yes
+
+- name: start the spark_master
+  command: /opt/{{ item }}/sbin/start-all.sh
+  with_items: spark.spark_version
+  sudo: yes
+  sudo_user: vagrant
+  ignore_errors: yes

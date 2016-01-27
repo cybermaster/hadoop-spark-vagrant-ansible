@@ -1,0 +1,5 @@
+---
+# Playbook for Spark setup
+
+- include: spark_workers.yml tags=spark_workers
+  sudo: yes

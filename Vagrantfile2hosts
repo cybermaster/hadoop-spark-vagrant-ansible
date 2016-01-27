@@ -1,0 +1,39 @@
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu-opscode"
+  config.vm.box_url = "http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-12.04_chef-provisionerless.box"
+
+  if Vagrant.has_plugin?('vagrant-cachier')
+    config.cache.enable :apt
+  else
+    printf("** Install vagrant-cachier plugin `vagrant plugin install vagrant-cachier` to speedup deploy.**\n")
+  end
+  
+  if Vagrant.has_plugin?('vagrant-hostmanager')
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+  else 
+    raise "** Install vagrant-hostmanager plugin `vagrant plugin install vagrant-hostmanager`.**\n"
+  end
+
+ config.vm.define "hadoopmaster" do |c|
+   c.vm.hostname = "hadoopmaster"
+   c.vm.network :private_network, ip: "192.168.50.11"
+   c.hostmanager.aliases = %w(hadoopmaster.local)
+   c.vm.provider :virtualbox do |vb|
+     vb.customize ['modifyvm', :id, '--memory', 512]
+     vb.customize ['modifyvm', :id, '--cpus', 1]
+   end
+ end
+
+ config.vm.define "hadoopslave1" do |c|
+   c.vm.hostname = "hadoopslave1"
+   c.vm.network :private_network, ip: "192.168.50.12"
+   c.hostmanager.aliases = %w(hadoopslave1.local)
+   c.vm.provider :virtualbox do |vb|
+     vb.customize ['modifyvm', :id, '--memory', 512]
+     vb.customize ['modifyvm', :id, '--cpus', 1]
+   end
+ end
+end

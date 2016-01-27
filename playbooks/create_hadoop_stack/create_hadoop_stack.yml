@@ -1,0 +1,43 @@
+# Use the ec2 module to create a new host and then add
+# it to a special "hadoop-group" group.
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+    # Tag information for this cloud
+    owner: "BillZhao"
+    name: "Hadoop"
+    email: "billzcal@gmail.com"
+    projectname: "Data Analytics"
+    team: "team-name"
+    
+    # ec2 config information 
+    stack_name: hadoop-{{ owner }}
+    keyname: "keyname"
+    instance_type: "m3.medium"
+    ami_id: "ami-ef5e24df"
+    group: "hadoopgroup"
+    region: "us-west-2"
+    zone: "us-west-2c"
+    description: "hadoop env for testing"
+    
+  tasks:
+    - name: Create Hadoop Stack on ec2
+      action: cloudformation
+        stack_name={{ stack_name }}
+        state=present
+        region="{{region}}"
+        template=files/cf-hadoop-stack.json
+      args:
+        template_parameters:
+          KeyName: "{{ keyname }}"
+          AMIImageId: "{{ ami_id }}"
+          Owner: "{{ owner }}"
+          Name: "{{ name }}"
+          Email: "{{ email }}"
+          ProjectName: "{{projectname}}"
+          Team: "{{team}}"
+          
+      register: hadoop_stack
+    - debug: var=hadoop_stack.stack_outputs

@@ -1,0 +1,5 @@
+---
+# Playbook for  Hadoop slave servers
+
+- include: slaves.yml tags=hadoop_slaves
+  sudo: yes

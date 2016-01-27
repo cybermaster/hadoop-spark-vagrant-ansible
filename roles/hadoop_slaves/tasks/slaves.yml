@@ -1,0 +1,66 @@
+---
+# Playbook for  Hadoop slave servers
+
+- name: Install the datanode and tasktracker packages
+  apt: name={{item}} state=latest
+  with_items: 
+   - hadoop-0.20-mapreduce-tasktracker
+   - hadoop-hdfs-datanode
+   - hadoop-hdfs-fuse
+
+- name: Copy the hadoop configuration files for HA
+  template: src=roles/hadoop_common/templates/hadoop_ha_conf/{{item}}.j2 dest=/etc/hadoop/conf/{{item}} 
+  with_items: 
+   - core-site.xml
+   - hadoop-metrics.properties
+   - hadoop-metrics2.properties
+   - hdfs-site.xml
+   - log4j.properties
+   - mapred-site.xml
+   - hadoop-env.sh
+   - slaves
+  when: ha_enabled
+  notify: restart hadoop slave services
+
+- name: Copy the hadoop configuration files for non-HA
+  template: src=roles/hadoop_common/templates/hadoop_conf/{{item}}.j2 dest=/etc/hadoop/conf/{{item}} mode=644
+  with_items: 
+   - core-site.xml
+   - hadoop-metrics.properties
+   - hadoop-metrics2.properties
+   - hdfs-site.xml
+   - log4j.properties
+   - mapred-site.xml
+   - hadoop-env.sh
+   - slaves
+  when: not ha_enabled
+  notify: restart hadoop slave services
+
+- name: Create the data directory for the slave nodes to store the data
+  file: path={{ item }} owner=hdfs group=hdfs state=directory
+  with_items: hadoop.dfs_datanode_data_dir
+
+- name: Create the data directory for the slave nodes for mapreduce
+  file: path={{ item }} owner=mapred group=mapred state=directory
+  with_items: hadoop.mapred_local_dir
+
+- name: start hadoop slave services
+  service: name={{ item }} state=started
+  with_items:
+    - hadoop-0.20-mapreduce-tasktracker
+    - hadoop-hdfs-datanode
+
+- name: Create /fuse-hdfs
+  file: path={{ item }} owner=vagrant state=directory
+  with_items: hadoop.fuse_hdfs_dir
+  ignore_errors: yes
+
+# add line to /etc/fstab for mountable HDFS fuse if it does not exist
+- name: Add mountable HDFS fuse to /etc/fstab
+  lineinfile: dest=/etc/fstab line="hadoop-fuse-dfs#dfs://hadoopmaster:8020 /fuse-hdfs fuse allow_other,usetrash,rw 2 0" state=present
+  ignore_errors: yes
+
+# Reload /etc/fstab
+- name: Reload /etc/fstab
+  command: sudo mount -a
+  ignore_errors: yes

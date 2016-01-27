@@ -1,0 +1,9 @@
+---
+# Playbook for  Hadoop client servers
+
+- name: Install the hadoop-client packages
+  apt: name={{item}} force=yes state=latest
+  with_items:
+   - hadoop-client
+   - hadoop-doc
+  sudo: yes

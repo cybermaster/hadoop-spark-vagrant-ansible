@@ -1,0 +1,11 @@
+---
+# Launch Job to estimated pi.
+
+- hosts: hadoop_clients
+  sudo: yes
+  tasks:
+   - name: Run the MapReduce job to run a simple Quasi Monte Carlo Pi estimation
+     shell: sudo su - hdfs -c "hadoop jar /usr/lib/hadoop-0.20-mapreduce/hadoop-examples.jar pi 1000 1000"
+     register: pi_result
+
+   - debug: msg="{{pi_result.stdout}}"

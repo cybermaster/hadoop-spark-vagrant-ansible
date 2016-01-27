@@ -1,0 +1,12 @@
+# zookeepers internal services simple-iptables
+---
+internal_services:
+  zookeeper_client:
+    protocol: tcp
+    port: "{{zookeeper_clientport}}"
+  zookeeper_leader:
+    protocol: tcp
+    port: "{{zookeeper_leader_port}}"
+  zookeeper_election:
+    protocol: tcp
+    port: "{{zookeeper_election_port}}"

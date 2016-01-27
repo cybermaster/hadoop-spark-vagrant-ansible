@@ -1,0 +1,5 @@
+---
+# Playbook for Hue servers
+
+- include: hue.yml tags=hue_server
+  sudo: yes

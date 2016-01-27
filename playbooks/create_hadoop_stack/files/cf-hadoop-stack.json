@@ -1,0 +1,173 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create the AWS Hadoop stack Resources",
+
+    "Parameters": {
+        "KeyName" : {
+            "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the cluster",
+            "Type" : "String",
+            "Default" : "mycluster"
+        },
+        "EC2InstanceType" : {
+            "Description" : "Default type of EC2 instances to launch. Used for API and services instances.",
+            "Type" : "String",
+            "Default" : "m3.medium"
+        },
+        "AMIImageId" : {
+            "Description" : "Id of the AMI image to use for creating all EC2 instances",
+            "Type" : "String",
+            "Default": "ami-ef5e24df"
+        },
+        "Owner" : {
+            "Description" : "Owner of this stack deployment (e.g username)",
+            "Type": "String"
+        },
+        "Name" : {
+            "Description" : "Name of this stack deployment (e.g hadoop)",
+            "Type": "String"
+        },
+        "Email" : {
+            "Description" : "Email of this stack deployment (e.g user@gmail.com)",
+            "Type": "String"
+        },
+        "ProjectName" : {
+            "Description" : "Project name of this stack deployment (e.g Hadoop-testing)",
+            "Type": "String"
+        },
+        "Team" : {
+            "Description" : "Team of this stack deployment (e.g team name)",
+            "Type": "String"
+        }
+    },
+
+    "Resources": {
+        "HadoopSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for the Hadoop instances",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "50010",
+                        "ToPort": "50075",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8018",
+                        "ToPort": "8485",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+
+        "HadoopMasterSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for the Hadoop Master (namenode) instances",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "50010",
+                        "ToPort": "50075",
+                        "SourceSecurityGroupName": { "Ref": "HadoopSecurityGroup" }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8018",
+                        "ToPort": "8485",
+                        "SourceSecurityGroupName": { "Ref": "HadoopSecurityGroup" }
+                    },
+                ]
+            }
+        },
+
+        "HadoopMasterInstance01" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                "SecurityGroups" : [ { "Ref" : "HadoopMasterSecurityGroup" } ],
+                "KeyName" : { "Ref" : "KeyName" },
+                "InstanceType": { "Ref" : "EC2InstanceType" },
+                "ImageId" : { "Ref": "AMIImageId" },
+                "Tags": [
+                    { "Key": "Name", "Value": "hadoop_masters" },
+                    { "Key": "HostGroup", "Value": "hadoop_masters" },
+                    { "Key": "Owner", "Value": { "Ref": "Owner" } },
+                    { "Key": "Email", "Value": { "Ref": "Email" } },
+                    { "Key": "ProjectName", "Value": { "Ref": "ProjectName" } },
+                    { "Key": "team", "Value": { "Ref": "Team" } }
+                ]
+            }
+        },
+
+        "HadoopClientInstance01" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                "SecurityGroups" : [ { "Ref" : "HadoopSecurityGroup" } ],
+                "KeyName" : { "Ref" : "KeyName" },
+                "InstanceType": { "Ref" : "EC2InstanceType" },
+                "ImageId" : { "Ref": "AMIImageId" },
+                "Tags": [
+                    { "Key": "Name", "Value": "hadoop_client1" },
+                    { "Key": "HostGroup", "Value": "hadoop_clients" },
+                    { "Key": "Owner", "Value": { "Ref": "Owner" } },
+                    { "Key": "Email", "Value": { "Ref": "Email" } },
+                    { "Key": "ProjectName", "Value": { "Ref": "ProjectName" } },
+                    { "Key": "team", "Value": { "Ref": "Team" } }
+                ]
+            }
+        },
+
+        "HadoopLaunchConfig" : {
+            "Type" : "AWS::AutoScaling::LaunchConfiguration",
+            "Properties" : {
+                "KeyName" : { "Ref" : "KeyName" },
+                "InstanceType" : { "Ref" : "EC2InstanceType" },
+                "ImageId" : { "Ref" : "AMIImageId" },
+                "SecurityGroups" : [ { "Ref" : "HadoopSecurityGroup" } ]
+            }
+        },
+
+        "HadoopAutoScalingGroup" : {
+            "Type" : "AWS::AutoScaling::AutoScalingGroup",
+            "Properties" : {
+                "AvailabilityZones" : { "Fn::GetAZs" : "" },
+                "LaunchConfigurationName" : { "Ref" : "HadoopLaunchConfig" },
+                "MinSize" : "3",
+                "MaxSize" : "5",
+                "Tags": [
+                    { "Key": "HostGroup", "Value": "hadoop_slaves", "PropagateAtLaunch": true },
+                    { "Key": "Owner", "Value": { "Ref": "Owner" }, "PropagateAtLaunch": true },
+                    { "Key": "Name", "Value": { "Ref": "Name" }, "PropagateAtLaunch": true },
+                    { "Key": "Email", "Value": { "Ref": "Email" }, "PropagateAtLaunch": true },
+                    { "Key": "ProjectName", "Value": { "Ref": "ProjectName" }, "PropagateAtLaunch": true },
+                    { "Key": "team", "Value": { "Ref": "Team" }, "PropagateAtLaunch": true }
+                ]
+            }
+        },
+        "HadoopScaleUpPolicy" : {
+            "Type" : "AWS::AutoScaling::ScalingPolicy",
+            "Properties" : {
+                "AdjustmentType" : "ChangeInCapacity",
+                "AutoScalingGroupName" : { "Ref" : "HadoopAutoScalingGroup" },
+                "Cooldown" : "60",
+                "ScalingAdjustment" : "1"
+            }
+        },
+
+        "HadoopScaleDownPolicy" : {
+            "Type" : "AWS::AutoScaling::ScalingPolicy",
+            "Properties" : {
+                "AdjustmentType" : "ChangeInCapacity",
+                "AutoScalingGroupName" : { "Ref" : "HadoopAutoScalingGroup" },
+                "Cooldown" : "60",
+                "ScalingAdjustment" : "-1"
+            }
+        }
+    },
+
+    "Outputs": {
+        "MyStacksRegion": { "Value": { "Ref": "AWS::Region" } }
+    }
+}

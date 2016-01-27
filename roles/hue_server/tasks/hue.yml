@@ -1,0 +1,14 @@
+---
+# Playbook for Hue servers
+
+- name: Install the hue server packages
+  apt: name={{item}} state=latest
+  with_items: 
+   - hue
+   - hue-server
+   - hue-plugins
+   - sqoop2-client
+   - libmysql-java
+   - libmysqlclient-dev
+   - mysql-server
+   - python-mysqldb

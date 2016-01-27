@@ -1,0 +1,54 @@
+# Hadoop internal services simple-iptables
+---
+internal_services:
+  hadoop_FS_port:
+    protocol: tcp
+    port: "{{hadoop['fs_default_FS_port']}}"
+  hadoop_datanode_address_port:
+    protocol: tcp
+    port: "{{hadoop['dfs_datanode_address_port']}}"
+  hadoop_dfs_datanode_ipc_address_port:
+    protocol: tcp
+    port: "{{hadoop['dfs_datanode_ipc_address_port']}}"
+  hadoop_dfs_namenode_http_address_port:
+    protocol: tcp
+    port: "{{hadoop['dfs_namenode_http_address_port']}}"
+  hadoop_dfs_datanode_http_address_port:
+    protocol: tcp
+    port: "{{hadoop['dfs_datanode_http_address_port']}}"
+  hadoop_dfs_ha_zkfc_port:
+    protocol: tcp
+    port: "{{hadoop['dfs_ha_zkfc_port']}}"
+  hadoop_qjournal_port:
+    protocol: tcp
+    port: "{{hadoop['qjournal_port']}}"
+  hadoop_qjournal_http_port:
+    protocol: tcp
+    port: "{{hadoop['qjournal_http_port']}}"
+  hadoop_zookeeper_clientport:
+    protocol: tcp
+    port: "{{hadoop['zookeeper_clientport']}}"
+  hadoop_zookeeper_clientport:
+    protocol: tcp
+    port: "{{hadoop['zookeeper_clientport']}}"
+  hadoop_zookeeper_leader_port:
+    protocol: tcp
+    port: "{{hadoop['zookeeper_leader_port']}}"
+  hadoop_zookeeper_election_port:
+    protocol: tcp
+    port: "{{hadoop['zookeeper_election_port']}}"
+  hadoop_mapred_job_tracker_http_address_port:
+    protocol: tcp
+    port: "{{hadoop['mapred_job_tracker_http_address_port']}}"
+  hadoop_mapred_task_tracker_http_address_port:
+    protocol: tcp
+    port: "{{hadoop['mapred_task_tracker_http_address_port']}}"
+  hadoop_mapred_job_tracker_port:
+    protocol: tcp
+    port: "{{hadoop['mapred_job_tracker_port']}}"
+  hadoop_mapred_ha_jobtracker_rpc-address_port:
+    protocol: tcp
+    port: "{{hadoop['mapred_ha_jobtracker_rpc-address_port']}}" 
+  hadoop_mapred_ha_zkfc_port:
+    protocol: tcp
+    port: "{{hadoop['mapred_ha_zkfc_port']}}"

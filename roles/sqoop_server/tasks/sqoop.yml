@@ -1,0 +1,12 @@
+---
+# Playbook for Sqoop2 servers
+
+- name: Install the sqoop2 server packages
+  apt: name={{item}} state=latest
+  with_items: 
+   - sqoop2-server
+   - sqoop2-client
+   - libmysql-java
+   - libmysqlclient-dev
+   - mysql-server
+   - python-mysqldb

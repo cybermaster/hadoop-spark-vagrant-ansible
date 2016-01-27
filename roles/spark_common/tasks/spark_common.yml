@@ -1,0 +1,18 @@
+---
+# Install the spark as a Spark standalone cluster (w/o yarn).
+
+- name: copy the spark tgz file to server
+  copy: src=roles/spark_common/files/{{ item }}.tgz dest=/tmp/
+  with_items: spark.spark_version
+  sudo: yes
+  sudo_user: vagrant
+  ignore_errors: yes
+
+- name: Create the spark directory
+  file: path={{ item }} owner=vagrant state=directory
+  with_items: spark.spark_program_dir
+
+- name: Unzip the spark tgz file to /opt/spark_directory
+  unarchive: src=/tmp/{{ item }}.tgz dest=/opt/ copy=no owner=vagrant group=vagrant
+  with_items: spark.spark_version
+

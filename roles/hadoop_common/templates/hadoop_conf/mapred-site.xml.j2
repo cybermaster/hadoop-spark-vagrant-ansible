@@ -1,0 +1,30 @@
+<configuration>
+  
+  <property>
+    <name>mapred.job.tracker</name>
+    <value>{{ hostvars[groups['hadoop_masters'][0]]['ansible_hostname'] }}:{{ hadoop['mapred_job_tracker_port'] }}</value>
+	<description>The host and port that the MapReduce job tracker runs
+	  at.  If "local", then jobs are run in-process as a single map
+	  and reduce task.
+	</description>
+  </property>
+  
+  <property>
+    <name>mapred.task.tracker.http.address</name>
+    <value>0.0.0.0:{{ hadoop['mapred_task_tracker_http_address_port'] }}</value>
+  </property>
+  <property>
+    <name>mapred.job.tracker.http.address</name>
+    <value>0.0.0.0:{{ hadoop['mapred_job_tracker_http_address_port'] }}</value>
+  </property>
+  <property>
+    <name>jobtracker.thrift.address</name>
+    <value>0.0.0.0:9290</value>
+  </property>
+  <property>
+    <name>mapred.jobtracker.plugins</name>
+    <value>org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin</value>
+    <description>Comma-separated list of jobtracker plug-ins to be activated.</description>
+  </property>
+
+</configuration>

@@ -1,0 +1,5 @@
+---
+# Playbook for Sqoop2 servers
+
+- include: sqoop.yml tags=sqoop_server
+  sudo: yes
